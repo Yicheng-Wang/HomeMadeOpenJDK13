@@ -377,10 +377,11 @@ void PSOldGen::resize(size_t desired_free_space) {
     size_t change_bytes = new_size - current_size;
     expand(change_bytes);
   } else {
-    size_t change_bytes = current_size - new_size;
+    //size_t change_bytes = current_size - new_size;
     // shrink doesn't grab this lock, expand does. Is that right?
-    MutexLocker x(ExpandHeap_lock);
-    shrink(change_bytes);
+    //MutexLocker x(ExpandHeap_lock);
+    //shrink(change_bytes);
+    return;
   }
 
   log_trace(gc, ergo)("AdaptiveSizePolicy::old generation size: collection: %d (" SIZE_FORMAT ") -> (" SIZE_FORMAT ") ",
