@@ -47,7 +47,7 @@ PSOldGen::PSOldGen(ReservedSpace rs, size_t alignment,
                    size_t initial_size, size_t min_size, size_t max_size,
                    const char* perf_data_name, int level):
   _name(select_name()), _init_gen_size(initial_size), _min_gen_size(min_size),
-  _max_gen_size(max_size)
+  _max_gen_size(max_size), _shrink(0)
 {
   initialize(rs, alignment, perf_data_name, level);
 }
@@ -56,7 +56,7 @@ PSOldGen::PSOldGen(size_t initial_size,
                    size_t min_size, size_t max_size,
                    const char* perf_data_name, int level):
   _name(select_name()), _init_gen_size(initial_size), _min_gen_size(min_size),
-  _max_gen_size(max_size)
+  _max_gen_size(max_size), _shrink(0)
 {}
 
 void PSOldGen::initialize(ReservedSpace rs, size_t alignment,
@@ -370,21 +370,28 @@ void PSOldGen::resize(size_t desired_free_space) {
     gen_size_limit(), min_gen_size());
 
   if (new_size == current_size) {
+      _shrink = 0;
     // No change requested
     return;
   }
   if (new_size > current_size) {
+      _shrink = 0;
     size_t change_bytes = new_size - current_size;
     expand(change_bytes);
   } else {
-    //size_t change_bytes = current_size - new_size;
-    // shrink doesn't grab this lock, expand does. Is that right?
-    //MutexLocker x(ExpandHeap_lock);
-    //shrink(change_bytes);
-    return;
+      if(_shrink == 0){
+          _shrink ++;
+          return;
+      }
+      else{
+          size_t change_bytes = current_size - new_size;
+          // shrink doesn't grab this lock, expand does. Is that right?
+          MutexLocker x(ExpandHeap_lock);
+          shrink(change_bytes);
+          return;
+      }
   }
-
-  log_trace(gc, ergo)("AdaptiveSizePolicy::old generation size: collection: %d (" SIZE_FORMAT ") -> (" SIZE_FORMAT ") ",
+  log_debug(gc, ergo)("AdaptiveSizePolicy::old generation size: collection: %d (" SIZE_FORMAT ") -> (" SIZE_FORMAT ") ",
                       ParallelScavengeHeap::heap()->total_collections(),
                       size_before,
                       virtual_space()->committed_size());

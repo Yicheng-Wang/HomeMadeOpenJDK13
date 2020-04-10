@@ -58,6 +58,7 @@ class PSOldGen : public CHeapObj<mtGC> {
   const size_t _init_gen_size;
   const size_t _min_gen_size;
   const size_t _max_gen_size;
+  static int _shrink;
 
   // Used when initializing the _name field.
   static inline const char* select_name();
