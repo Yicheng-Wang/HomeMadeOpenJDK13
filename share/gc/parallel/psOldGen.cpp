@@ -39,6 +39,8 @@
 #include "runtime/java.hpp"
 #include "utilities/align.hpp"
 
+int PSOldGen::_shrink = 0;
+
 inline const char* PSOldGen::select_name() {
   return UseParallelOldGC ? "ParOldGen" : "PSOldGen";
 }
@@ -47,7 +49,7 @@ PSOldGen::PSOldGen(ReservedSpace rs, size_t alignment,
                    size_t initial_size, size_t min_size, size_t max_size,
                    const char* perf_data_name, int level):
   _name(select_name()), _init_gen_size(initial_size), _min_gen_size(min_size),
-  _max_gen_size(max_size), _shrink(0)
+  _max_gen_size(max_size)
 {
   initialize(rs, alignment, perf_data_name, level);
 }
@@ -56,7 +58,7 @@ PSOldGen::PSOldGen(size_t initial_size,
                    size_t min_size, size_t max_size,
                    const char* perf_data_name, int level):
   _name(select_name()), _init_gen_size(initial_size), _min_gen_size(min_size),
-  _max_gen_size(max_size), _shrink(0)
+  _max_gen_size(max_size)
 {}
 
 void PSOldGen::initialize(ReservedSpace rs, size_t alignment,
@@ -370,17 +372,17 @@ void PSOldGen::resize(size_t desired_free_space) {
     gen_size_limit(), min_gen_size());
 
   if (new_size == current_size) {
-      _shrink = 0;
+      PSOldGen::_shrink = 0;
     // No change requested
     return;
   }
   if (new_size > current_size) {
-      _shrink = 0;
+      PSOldGen::_shrink = 0;
     size_t change_bytes = new_size - current_size;
     expand(change_bytes);
   } else {
-      if(_shrink == 0){
-          _shrink ++;
+      if(PSOldGen::_shrink == 0){
+          PSOldGen::_shrink ++;
           return;
       }
       else{
