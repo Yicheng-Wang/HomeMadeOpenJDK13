@@ -261,8 +261,6 @@ class AdaptiveSizePolicy : public CHeapObj<mtGC> {
   }
 
 
-  bool young_gen_policy_is_ready() { return _young_gen_policy_is_ready; }
-
   void update_minor_pause_young_estimator(double minor_pause_in_ms);
   virtual void update_minor_pause_old_estimator(double minor_pause_in_ms) {
     // This is not meaningful for all policies but needs to be present
@@ -332,6 +330,8 @@ class AdaptiveSizePolicy : public CHeapObj<mtGC> {
   bool is_gc_ps_adaptive_size_policy() {
     return kind() == _gc_ps_adaptive_size_policy;
   }
+
+  bool young_gen_policy_is_ready() { return _young_gen_policy_is_ready; }
 
   AdaptivePaddedAverage*   avg_minor_pause() const { return _avg_minor_pause; }
   AdaptiveWeightedAverage* avg_minor_interval() const {

@@ -91,11 +91,13 @@ size_t PSAdaptiveSizePolicy::calculated_old_free_size_in_bytes() const {
   if (MinHeapFreeRatio != 0) {
     size_t min_free = calculate_free_based_on_live(live, MinHeapFreeRatio);
     free_size = MAX2(free_size, min_free);
+    log_debug(gc, ergo)("MinHeapFreeRatio:" UINTX_FORMAT "MAX free_size " SIZE_FORMAT " and min_free: " SIZE_FORMAT, MinHeapFreeRatio,free_size, min_free);
   }
 
   if (MaxHeapFreeRatio != 100) {
     size_t max_free = calculate_free_based_on_live(live, MaxHeapFreeRatio);
     free_size = MIN2(max_free, free_size);
+      log_debug(gc, ergo)("MaxHeapFreeRatio:" UINTX_FORMAT "MIN free_size " SIZE_FORMAT " and max_free: " SIZE_FORMAT, MaxHeapFreeRatio,free_size, max_free);
   }
 
   return free_size;

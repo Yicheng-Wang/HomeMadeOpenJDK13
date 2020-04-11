@@ -555,7 +555,17 @@ bool PSScavenge::invoke_no_policy() {
         // Resizing the old gen at young collections can cause increases
         // that don't feed back to the generation sizing policy until
         // a full collection.  Don't resize the old gen here.
+          size_t policy_promo = size_policy->calculated_promo_size_in_bytes();
+          size_t avg_promo = size_policy->avg_promoted()->padded_average();
 
+          if(size_policy->young_gen_policy_is_ready()){
+            if(policy_promo > avg_promo * 3 / 2){
+                heap->resize_old_gen(policy_promo);
+                log_debug(gc, ergo)("Resize Old gen at young gc, promoted:" SIZE_FORMAT " _promo_size:" SIZE_FORMAT
+                        " avg_promoted:" SIZE_FORMAT "* 1.5 = " SIZE_FORMAT, promoted, policy_promo,
+                        avg_promo,  avg_promo * 3 / 2);
+            }
+        }
         heap->resize_young_gen(size_policy->calculated_eden_size_in_bytes(),
                         size_policy->calculated_survivor_size_in_bytes());
 
